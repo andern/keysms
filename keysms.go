@@ -77,5 +77,5 @@ func call(uri string, payload string) (*http.Response, error) {
 	param = url.PathEscape(param)
 	contentType := "application/x-www-form-urlencoded"
 	data := bytes.NewBuffer([]byte(param))
-	return http.Post(uri, "application/x-www-form-urlencoded", bytes.NewBuffer([]byte(param)))
+	return http.Post(uri, contentType, data)
 }
