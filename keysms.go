@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 const (
@@ -21,18 +22,25 @@ var (
 
 type SMSParams struct {
 	// Text content of the SMS to send
-	Message string `json:"message"`
+	Message string
 
-	// The receivers of the SMS
-	Receivers []string `json:"receivers"`
+	// The recipients of the SMS
+	Recipients []string
 
 	// The number the SMS appears to be sent from
-	Sender string `json:"sender,omitempty"`
+	Sender string
 
-	// Date when the SMS should be sent (YYYY-MM-DD)
+	// Time when the SMS should be sent
+	Time time.Time
+}
+
+type smsParams struct {
+	Message   string   `json:"message"`
+	Receivers []string `json:"receivers"`
+	Sender    string   `json:"sender,omitempty"`
+	// YYYY-MM-DD
 	Date string `json:"date,omitempty"`
-
-	// Time when the SMS should be sent (HH:mm)
+	// HH:mm
 	Time string `json:"time,omitempty"`
 }
 
@@ -42,7 +50,7 @@ func Auth(user, key string) {
 }
 
 func Send(params SMSParams) (SMSResponse, error) {
-	payload, err := json.Marshal(params)
+	payload, err := json.Marshal(payloadParams(params))
 	if err != nil {
 		return SMSResponse{}, err
 	}
@@ -57,11 +65,22 @@ func Send(params SMSParams) (SMSResponse, error) {
 	return smsres, err
 }
 
-func SendSMS(message string, receivers ...string) (SMSResponse, error) {
+func SendSMS(message string, recipients ...string) (SMSResponse, error) {
 	return Send(SMSParams{
-		Message:   message,
-		Receivers: receivers,
+		Message:    message,
+		Recipients: recipients,
 	})
+}
+
+func payloadParams(p SMSParams) (res smsParams) {
+	res.Message = p.Message
+	res.Receivers = p.Recipients
+	res.Sender = p.Sender
+	if !p.Time.IsZero() {
+		res.Date = p.Time.Format("2006-01-02")
+		res.Time = p.Time.Format("15:04")
+	}
+	return
 }
 
 func sign(payload string) string {
