@@ -18,8 +18,7 @@ msg := keysms.SMSParams{
     Message:   "text message here",
     Receivers: []string{"98765432", "12345678"},
     Sender:    "99999999",
-    Date:      "2017-11-27",
-    Time:      "22:00",
+    Time:      time.Now().Add(2 * time.Hour),
 }
 keysms.Send(msg)
 ```
